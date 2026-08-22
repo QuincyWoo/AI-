@@ -110,9 +110,10 @@ public class DoctorController {
                 doc.put("sex",doctor.getSex());
                 doc.put("department", doctor.getDepartment());
                 doc.put("phone", doctor.getPhone());
+                doc.put("status", doctor.getStatus());
                 // 由于实体类没有这些字段，使用默认值
-                doc.put("title", "主治医师");           // 默认职称
-                doc.put("expertise", "全科诊疗");        // 默认擅长
+                doc.put("title", doctor.getTitle());    // 默认职称
+                doc.put("expertise",doctor.getExpertise());    // 默认擅长
                 doc.put("avatar", "/default-avatar.png"); // 默认头像
                 doc.put("rating", 4.5);                  // 默认评分
                 doctorList.add(doc);
@@ -121,6 +122,135 @@ public class DoctorController {
             result.put("code", 200);
             result.put("msg", "查询成功");
             result.put("data", doctorList);
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            result.put("code", 500);
+            result.put("msg", "查询失败：" + e.getMessage());
+            result.put("data", new ArrayList<>());
+            return ResponseEntity.status(500).body(result);
+        }
+    }
+    // ========== 新增：获取全部医生列表 ==========
+    @GetMapping("/list")
+    public ResponseEntity<Map<String, Object>> getAllDoctors() {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            List<Doctor> doctors = doctorRepository.findAll();
+
+            if (doctors == null || doctors.isEmpty()) {
+                result.put("code", 200);
+                result.put("msg", "暂无医生数据");
+                result.put("data", new ArrayList<>());
+                return ResponseEntity.ok(result);
+            }
+
+            List<Map<String, Object>> doctorList = new ArrayList<>();
+            for (Doctor doctor : doctors) {
+                Map<String, Object> doc = new HashMap<>();
+                doc.put("name", doctor.getName());
+                doc.put("department", doctor.getDepartment());
+                doc.put("title", doctor.getTitle());
+                doc.put("status", doctor.getStatus());
+                doc.put("expertise", doctor.getExpertise());
+                doctorList.add(doc);
+            }
+
+            result.put("code", 200);
+            result.put("msg", "查询成功");
+            result.put("data", doctorList);
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            result.put("code", 500);
+            result.put("msg", "查询失败：" + e.getMessage());
+            result.put("data", new ArrayList<>());
+            return ResponseEntity.status(500).body(result);
+        }
+    }
+    // ========== 获取空闲中的全部医生列表 ==========
+    @GetMapping("/list/available")
+    public ResponseEntity<Map<String, Object>> getAvailableDoctors() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // 查询所有状态为"空闲中"的医生
+            List<Doctor> doctors = doctorRepository.findByStatus("空闲中");
+
+            if (doctors == null || doctors.isEmpty()) {
+                result.put("code", 200);
+                result.put("msg", "暂无空闲中的医生");
+                result.put("data", new ArrayList<>());
+                return ResponseEntity.ok(result);
+            }
+
+            // 构建返回数据
+            List<Map<String, Object>> doctorList = new ArrayList<>();
+            for (Doctor doctor : doctors) {
+                Map<String, Object> doc = new HashMap<>();
+                doc.put("name", doctor.getName());
+                doc.put("department", doctor.getDepartment());
+                doc.put("title", doctor.getTitle());
+                doc.put("status", doctor.getStatus());
+                doc.put("expertise", doctor.getExpertise());
+                doctorList.add(doc);
+            }
+
+            result.put("code", 200);
+            result.put("msg", "查询成功");
+            result.put("data", doctorList);
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            result.put("code", 500);
+            result.put("msg", "查询失败：" + e.getMessage());
+            result.put("data", new ArrayList<>());
+            return ResponseEntity.status(500).body(result);
+        }
+    }
+    // ========== 新增：根据科室获取空闲医生列表（精简信息） ==========
+    @GetMapping("/available/by-department")
+    public ResponseEntity<Map<String, Object>> getAvailableDoctorsByDepartment(
+            @RequestParam("department") String department
+    ) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // 先根据科室查询医生
+            List<Doctor> doctors = doctorRepository.findByDepartment(department);
+
+            if (doctors == null || doctors.isEmpty()) {
+                result.put("code", 200);
+                result.put("msg", "该科室暂无医生");
+                result.put("data", new ArrayList<>());
+                return ResponseEntity.ok(result);
+            }
+
+            // 过滤出状态为"空闲中"的医生，只返回必要字段
+            List<Map<String, Object>> availableDoctorList = new ArrayList<>();
+            for (Doctor doctor : doctors) {
+                if ("空闲中".equals(doctor.getStatus())) {
+                    Map<String, Object> doc = new HashMap<>();
+                    doc.put("name", doctor.getName());
+                    doc.put("age", doctor.getAge());
+                    doc.put("sex", doctor.getSex());
+                    doc.put("department", doctor.getDepartment());
+                    doc.put("expertise", doctor.getExpertise());
+                    doc.put("status", doctor.getStatus());
+                    availableDoctorList.add(doc);
+                }
+            }
+
+            if (availableDoctorList.isEmpty()) {
+                result.put("code", 200);
+                result.put("msg", "该科室暂无空闲医生");
+                result.put("data", new ArrayList<>());
+                return ResponseEntity.ok(result);
+            }
+
+            result.put("code", 200);
+            result.put("msg", "查询成功");
+            result.put("data", availableDoctorList);
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {

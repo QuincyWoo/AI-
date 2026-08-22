@@ -32,4 +32,12 @@ public class Doctor {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "status",nullable = false)
+    private String status;
+
+    @Column(name = "title",nullable = false)
+    private String title;
+
+    @Column(name = "expertise",nullable = false)
+    private String expertise;
 }

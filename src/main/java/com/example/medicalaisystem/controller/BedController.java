@@ -30,7 +30,17 @@ public class BedController {
         return ResponseEntity.ok(res);
     }
 
-    // ====================== 2. 修改床位状态 + 病人姓名 ======================
+    // ====================== 2. 查询空闲床位 ======================
+    @GetMapping("/available")
+    public ResponseEntity<Map<String, Object>> listAvailable() {
+        Map<String, Object> res = new HashMap<>();
+        List<Bed> list = bedRepository.findByStatus("空闲");
+        res.put("code", 200);
+        res.put("data", list);
+        return ResponseEntity.ok(res);
+    }
+
+    // ====================== 3. 修改床位状态 + 病人姓名 ======================
     @PutMapping("/update/{id}")
     public ResponseEntity<Map<String, Object>> update(
             @PathVariable Integer id,

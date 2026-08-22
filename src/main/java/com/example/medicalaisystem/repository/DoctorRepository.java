@@ -11,4 +11,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, Integer> {
     Optional<Doctor> findByPhone(String phone);
     // ========== 新增：根据科室查询医生 ==========
     List<Doctor> findByDepartment(String department);
+    // 新增：根据状态查询医生
+    List<Doctor> findByStatus(String status);
 }
