@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/appoint")
+@CrossOrigin(originPatterns = "*")  // ← 改成 originPatterns
 public class AppointmentController {
 
     @Autowired
@@ -57,21 +58,17 @@ public class AppointmentController {
     public Map<String, Object> listPendingByDoctor(@RequestParam String doctorName) {
         Map<String, Object> map = new HashMap<>();
 
-        // 获取今天的日期范围（00:00:00 ~ 23:59:59）
         LocalDate today = LocalDate.now();
-        Date startOfDay = java.sql.Date.valueOf(today);        // 今天 00:00:00
-        Date endOfDay = java.sql.Date.valueOf(today.plusDays(1)); // 明天 00:00:00
+        Date startOfDay = java.sql.Date.valueOf(today);
+        Date endOfDay = java.sql.Date.valueOf(today.plusDays(1));
 
-        // 查询该医生所有"待就诊"状态的预约
         List<Appointment> allPending = appointmentRepository.findByDoctorNameAndStatus(doctorName, "待就诊");
 
-        // 筛选出当天创建的预约（createTime 在今天范围内）
         List<Appointment> todayPending = allPending.stream()
                 .filter(app -> {
                     if (app.getCreateTime() == null) {
                         return false;
                     }
-                    // createTime 在 [startOfDay, endOfDay) 范围内
                     return app.getCreateTime().after(startOfDay) && app.getCreateTime().before(endOfDay);
                 })
                 .collect(Collectors.toList());

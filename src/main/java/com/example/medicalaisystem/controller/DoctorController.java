@@ -169,6 +169,7 @@ public class DoctorController {
             return ResponseEntity.status(500).body(result);
         }
     }
+
     // ========== 获取空闲中的全部医生列表 ==========
     @GetMapping("/list/available")
     public ResponseEntity<Map<String, Object>> getAvailableDoctors() {
